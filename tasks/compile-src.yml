@@ -1,0 +1,41 @@
+---
+#             _            __          __     ___            _        
+#  _ __ _   _| |__  _   _ / /__ _ __ __\ \   / / |_ __ _ ___| | _____ 
+# | '__| | | | '_ \| | | | / __| '__/ __| | / /| __/ _` / __| |/ / __|
+# | |  | |_| | |_) | |_| | \__ \ | | (__| |/ / | || (_| \__ \   <\__ \
+# |_|   \__,_|_.__/ \__, | |___/_|  \___| /_/   \__\__,_|___/_|\_\___/
+#                   |___/ \_\          /_/                            
+# compile-src
+- name: compile-src | REBUILD | make clean
+  when: ruby.rebuild == true
+  shell: make clean distclean
+  args:
+    chdir:   "{{ ruby.workingdir }}/ruby-{{ ruby.version }}/"
+    removes: "Makefile"
+
+- name: compile-src | Ruby {{ ruby.version }} should be configured
+  shell: >
+    /bin/sh ./configure --prefix={{ ruby.install }}
+  args:
+    chdir:   "{{ ruby.workingdir }}/ruby-{{ ruby.version }}/"
+    creates: "Makefile"
+
+- name: compile-src | make Ruby {{ ruby.version }}
+  register: make_ruby_binary
+  shell: make
+  args:
+    chdir:   "{{ ruby.workingdir }}/ruby-{{ ruby.version }}/"
+    creates: "ruby"
+
+- name: compile-src | make test should be completed
+  when: make_ruby_binary.changed
+  shell: make test
+  args:
+    chdir: "{{ ruby.workingdir }}/ruby-{{ ruby.version }}/"
+
+- name: compile-src | ruby {{ ruby.version }} should be installed
+  when: make_ruby_binary.changed
+  shell: make install
+  args:
+    chdir: "{{ ruby.workingdir }}/ruby-{{ ruby.version }}/"
+

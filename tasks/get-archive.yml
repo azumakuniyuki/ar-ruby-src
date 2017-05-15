@@ -1,0 +1,25 @@
+---
+#             _            __          __     ___            _        
+#  _ __ _   _| |__  _   _ / /__ _ __ __\ \   / / |_ __ _ ___| | _____ 
+# | '__| | | | '_ \| | | | / __| '__/ __| | / /| __/ _` / __| |/ / __|
+# | |  | |_| | |_) | |_| | \__ \ | | (__| |/ / | || (_| \__ \   <\__ \
+# |_|   \__,_|_.__/ \__, | |___/_|  \___| /_/   \__\__,_|___/_|\_\___/
+#                   |___/ \_\          /_/                            
+# get-archive
+- name: get-archive | Get the major version of Ruby
+  register: majorver
+  changed_when: majorver.rc < 0
+  shell: echo "{{ ruby.version }}" | cut -d'.' -f1,2
+
+- name: get-archive | ruby-{{ ruby.version }}.tar.gz should be downloded at {{ ruby.workingdir }}
+  get_url:
+    url:  "https://cache.ruby-lang.org/pub/ruby/{{ majorver.stdout }}/ruby-{{ ruby.version }}.tar.gz"
+    dest: "{{ ruby.workingdir }}/ruby-{{ ruby.version }}.tar.gz"
+
+- name: get-archive | {{ ruby.workingdir }}/ruby-{{ ruby.version }}.tar.gz should be extracted
+  unarchive:
+    src:     "{{ ruby.workingdir }}/ruby-{{ ruby.version }}.tar.gz"
+    dest:    "{{ ruby.workingdir }}"
+    creates: "{{ ruby.workingdir }}/ruby-{{ ruby.version }}"
+    copy:    "no"
+
