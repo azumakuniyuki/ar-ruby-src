@@ -10,6 +10,7 @@
   gem:
     name:  "{{ item }}"
     state: "present"
+    executable: "{{ ruby.install }}/bin/gem"
   with_items:
     - "bundler"
 
